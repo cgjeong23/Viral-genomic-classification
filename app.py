@@ -7,7 +7,9 @@ import pandas as pd
 
 from ML.inference import infer, load_for_inference
 
-app = Dash(__name__)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 model_path = 'ML/0.pth'
 model, tokenizer, label_dict = load_for_inference(model_path, "ML/gene_tokenizer.json", "ML/label_dict.json",
@@ -25,28 +27,31 @@ app.layout = html.Div([
         html.H6("We will detect the virus for you."),
     ]),
     html.Hr(),
-    "Input: ",
-    html.Div(dcc.Textarea(id='my-input', value='', placeholder="input value")),
+    "Type your RNA Sequence: ",
+    html.Div(dcc.Textarea(id='my-input', value='', placeholder="ACTG...")),
     html.Button("Go!", id='go-button'),
     html.Br(),
     html.Div(id='my-output'),
-])
+], style={'text-align':'center'})
 
 
 @app.callback(Output(component_id='my-output', component_property='children'),
               State(component_id='my-input', component_property='value'),
               Input(component_id='go-button', component_property='n_clicks'))
+
 def update_output_div(input_value, n_clicks):
     if n_clicks is None:
         raise PreventUpdate
 
-    if set(input_value.upper()) != set('ACTG'):
+    input_value = input_value.strip().upper()
+
+    if set(input_value) != set('ACTG'):
         return html.P("Please input valid sequence containing only A, C, T, G", style={'color':'red'})
 
-    probability = infer(input_value.upper(), tokenizer, model)
+    probability = infer(input_value, tokenizer, model)
     df['Probability'] = probability
-    fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type")
-    return dcc.Graph(id='example-graph', figure=fig)
+    fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type", title="Classification Result")
+    return (dcc.Graph(id='example-graph', figure=fig))
 
 
 if __name__ == '__main__':
