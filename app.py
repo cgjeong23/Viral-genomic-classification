@@ -5,6 +5,8 @@ from dash.exceptions import PreventUpdate
 import plotly.express as px
 import pandas as pd
 
+from ML.inference import infer, load_for_inference
+
 app = Dash(__name__)
 
 df = pd.DataFrame({
@@ -12,8 +14,11 @@ df = pd.DataFrame({
         "Coronaviridae", "Influenza", "Metapneumovirus", "Rhinovirus", "SARS-CoV-2",
         "Human (no virus)"
     ],
-    "Probability": [0.8, 0.1, 0, 0, 0.1, 0],
 })
+
+model_path = 'ML/0.pth'
+model, tokenizer = load_for_inference(model_path, tokenizer_file="ML/gene_tokenizer.json",
+embedding_dim=256, hidden_dim=64, num_layers=1)
 
 app.layout = html.Div([
     html.H1("Viral Genome Classification"),
@@ -38,7 +43,8 @@ def update_output_div(input_value, n_clicks):
     if n_clicks is None:
         raise PreventUpdate
 
-    # city_df = df[df['City'] == input_value]
+    probability = infer(input_value.upper(), tokenizer, model)
+    df['Probability'] = probability
     fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type")
     return dcc.Graph(id='example-graph', figure=fig)
 
