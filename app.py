@@ -9,16 +9,13 @@ from ML.inference import infer, load_for_inference
 
 app = Dash(__name__)
 
-df = pd.DataFrame({
-    "Virus Type": [
-        "Coronaviridae", "Influenza", "Metapneumovirus", "Rhinovirus", "SARS-CoV-2",
-        "Human (no virus)"
-    ],
-})
-
 model_path = 'ML/0.pth'
-model, tokenizer = load_for_inference(model_path, tokenizer_file="ML/gene_tokenizer.json",
+model, tokenizer, label_dict = load_for_inference(model_path, "ML/gene_tokenizer.json", "ML/label_dict.json",
 embedding_dim=256, hidden_dim=64, num_layers=1)
+
+df = pd.DataFrame({
+    "Virus Type": [x[0] for x in sorted(label_dict.items(), key=lambda x: x[1])],
+})
 
 app.layout = html.Div([
     html.H1("Viral Genome Classification"),
