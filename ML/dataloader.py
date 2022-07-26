@@ -34,10 +34,10 @@ def sample_data(sequences, labels):
 
 def get_3_splits(sequences, labels):
     (train_sequence, test_sequence, train_label,
-     test_label) = train_test_split(sequences, labels, test_size=0.2)
+     test_label) = train_test_split(sequences, labels, test_size=0.2, stratify=labels)
 
     (valid_sequence, test_sequence, valid_label,
-     test_label) = train_test_split(test_sequence, test_label, test_size=0.5)
+     test_label) = train_test_split(test_sequence, test_label, test_size=0.5, stratify=test_label)
 
     return (train_sequence, valid_sequence, test_sequence, train_label, valid_label,
             test_label)
@@ -66,7 +66,7 @@ class SequenceDataset(Dataset):
         self.tokenizer.enable_padding()
 
     def get_label_dict(self, labels):
-        label_set = set(labels)
+        label_set = np.unique(labels)
         label_dict = {}
         for i, x in enumerate(label_set):
             label_dict[x] = i
