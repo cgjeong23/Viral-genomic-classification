@@ -40,6 +40,9 @@ def update_output_div(input_value, n_clicks):
     if n_clicks is None:
         raise PreventUpdate
 
+    if set(input_value.upper()) != set('ACTG'):
+        return html.P("Please input valid sequence containing only A, C, T, G", style={'color':'red'})
+
     probability = infer(input_value.upper(), tokenizer, model)
     df['Probability'] = probability
     fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type")
