@@ -1,5 +1,35 @@
 from torch import nn
+import torch
 
+class SkipGramEmbeddingModel(nn.Module):
+    
+    def __init__(self, vocab_size, embedding_dim, pad_id, window_size):
+        super().__init__()
+        self.pad_id = pad_id
+        emb_weight = torch.rand([vocab_size, embedding_dim])
+        emb_weight[pad_id] = 0
+        self.embedding = nn.Embedding.from_pretrained(emb_weight,
+        freeze=False, padding_idx=pad_id)
+        self.outlayer = nn.Linear(embedding_dim, vocab_size)
+        self.window_size = window_size
+   
+    def forward(self, ids):
+        embedded_ids = self.embedding(ids) # [B,L E]
+        grouped_emb = []
+        for i in range(ids.shape[1]):
+            if i - self.window_size < 0:
+                group = embedded_ids[:, 1: i + self.window_size].sum(1)
+            elif i + self.windows_size > ids.shape[1]:
+                group = embedded_ids[:, i-self.window_size:-1].sum(1)
+            else:
+                group = embedded_ids[:, i-self.window_size:i+self.window_size].sum(1)
+                group -= embedded_ids[:,i]
+
+            grouped_emb.append(group) # [ [B,E] ]
+
+        grouped_emb = torch.stack(grouped_emb, 1) #[B,L,E]
+        out = self.out_layer() # [B, L, V]
+        return out
 
 class RnnModel(nn.Module):
 
