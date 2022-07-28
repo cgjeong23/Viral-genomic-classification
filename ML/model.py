@@ -28,7 +28,7 @@ class SkipGramEmbeddingModel(nn.Module):
             grouped_emb.append(group) # [ [B,E] ]
 
         grouped_emb = torch.stack(grouped_emb, 1) #[B,L,E]
-        out = self.out_layer() # [B, L, V]
+        out = self.out_layer(grouped_emb) # [B, L, V]
         return out
 
 class RnnModel(nn.Module):
