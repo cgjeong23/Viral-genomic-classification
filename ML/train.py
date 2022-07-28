@@ -12,7 +12,8 @@ def train(model,
           num_epochs,
           valid_loader=None,
           test_loader=None,
-          train_skip_gram=False, base_path=''):
+          train_skip_gram=False,
+          base_path=''):
     os.makedirs(f'{base_path}/GeneModels', exist_ok=True)
     # pytorch training loop
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -32,18 +33,17 @@ def train(model,
                 y = x.clone()
             else:
                 y = y.to('cuda')
-            y = y.to('cuda')
 
             h = model(x)  # [B, C] or [B, L, V]
             if train_skip_gram:
-                h = h.permute(0,2,1) # [B, V, L]
+                h = h.permute(0, 2, 1)  # [B, V, L]
             j = loss_function(h, y)
 
             # do gradient descent
             optimizer.zero_grad()  # remove junk from last step
             j.backward()  # calculate gradient from current batch outputs
             optimizer.step()  # update the weights using the gradients
-            
+
             current_loss += j.item()
 
             if not train_skip_gram:
@@ -60,12 +60,16 @@ def train(model,
             train_score = accuracy_score(all_labels, all_preds)
 
         if valid_loader is not None:
-            val_score = evaluate(model, valid_loader, train_skip_gram=train_skip_gram,
-            loss_function=loss_function)
+            val_score = evaluate(model,
+                                 valid_loader,
+                                 train_skip_gram=train_skip_gram,
+                                 loss_function=loss_function)
             history['valid'].append(val_score)
         if test_loader is not None:
-            test_score = evaluate(model, test_loader, train_skip_gram=train_skip_gram,
-            loss_function=loss_function)
+            test_score = evaluate(model,
+                                  test_loader,
+                                  train_skip_gram=train_skip_gram,
+                                  loss_function=loss_function)
             history['test'].append(test_score)
 
         history['train'].append(train_score)
@@ -83,16 +87,16 @@ def evaluate(model, valid_loader, loss_function=None, train_skip_gram=False):
         batch_sequences, y = batch
         x = batch_sequences.to('cuda')
         if train_skip_gram:
-            y=x.clone()
+            y = x.clone()
         else:
             y = y.to('cuda')
         h = model(x)  # [B, C]
         if train_skip_gram:
-            h = h.permute(0,2,1)
-        
+            h = h.permute(0, 2, 1)
+
         if train_skip_gram:
             assert loss_function is not None, "loss function is None"
-            j = loss_function(h,y)
+            j = loss_function(h, y)
             current_loss += j.item()
         else:
             valid_preds.append(h.argmax(-1).detach().cpu())
