@@ -1,8 +1,1 @@
-{
-    "Coronaviridae": 0,
-    "Influenza": 1,
-    "Metapneumovirus": 2,
-    "Rhinovirus": 3,
-    "Sars_Cov-2": 4,
-    "Human": 5
-}
+{"Coronaviridae": 0, "Human": 1, "Influenza": 2, "Metapneumovirus": 3, "Rhinovirus": 4, "Sars_Cov-2": 5}
