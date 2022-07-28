@@ -14,12 +14,12 @@ class SkipGramEmbeddingModel(nn.Module):
         self.window_size = window_size
    
     def forward(self, ids):
-        embedded_ids = self.embedding(ids) # [B,L E]
+        embedded_ids = self.embedding() # [B,L E]
         grouped_emb = []
         for i in range(ids.shape[1]):
             if i - self.window_size < 0:
                 group = embedded_ids[:, 1: i + self.window_size].sum(1)
-            elif i + self.windows_size > ids.shape[1]:
+            elif i + self.window_size > ids.shape[1]:
                 group = embedded_ids[:, i-self.window_size:-1].sum(1)
             else:
                 group = embedded_ids[:, i-self.window_size:i+self.window_size].sum(1)
