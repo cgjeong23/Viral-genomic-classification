@@ -10,8 +10,9 @@ from ML.inference import infer, load_for_inference
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
-model_path = 'ML/0.pth'
+model_path = 'ML/model.pth'
 model, tokenizer, label_dict = load_for_inference(model_path, "ML/gene_tokenizer.json", "ML/label_dict.json",
 embedding_dim=256, hidden_dim=64, num_layers=1)
 
@@ -55,4 +56,4 @@ def update_output_div(input_value, n_clicks):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
