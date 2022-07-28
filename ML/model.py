@@ -10,7 +10,7 @@ class SkipGramEmbeddingModel(nn.Module):
         emb_weight[pad_id] = 0
         self.embedding = nn.Embedding.from_pretrained(emb_weight,
         freeze=False, padding_idx=pad_id)
-        self.outlayer = nn.Linear(embedding_dim, vocab_size)
+        self.out_layer = nn.Linear(embedding_dim, vocab_size)
         self.window_size = window_size
    
     def forward(self, ids):
