@@ -11,8 +11,9 @@ def train(model,
           lr,
           num_epochs,
           valid_loader=None,
-          test_loader=None):
-    os.makedirs('/content/drive/MyDrive/GeneModels', exist_ok=True)
+          test_loader=None,
+          train_skip_gram=False, base_path=''):
+    os.makedirs(f'{base_path}/GeneModels', exist_ok=True)
     # pytorch training loop
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
@@ -22,53 +23,85 @@ def train(model,
 
         all_preds = []
         all_labels = []
+        current_loss = 0
         for batch in pbar:
 
             batch_sequences, y = batch
             x = batch_sequences.to('cuda')
+            if train_skip_gram:
+                y = x.clone()
+            else:
+                y = y.to('cuda')
             y = y.to('cuda')
 
-            h = model(x)  # [B, C]
+            h = model(x)  # [B, C] or [B, L, V]
+            if train_skip_gram:
+                h = h.permute(0,2,1) # [B, V, L]
             j = loss_function(h, y)
 
             # do gradient descent
             optimizer.zero_grad()  # remove junk from last step
             j.backward()  # calculate gradient from current batch outputs
             optimizer.step()  # update the weights using the gradients
+            
+            current_loss += j.item()
 
-            all_preds.append(h.argmax(-1).detach().cpu())
-            all_labels.append(y.cpu())
+            if not train_skip_gram:
+                all_preds.append(h.argmax(-1).detach().cpu())
+                all_labels.append(y.cpu())
 
-        all_preds = torch.cat(all_preds).numpy()
-        all_labels = torch.cat(all_labels).numpy()
+        if train_skip_gram:
+            train_score = current_loss / len(dataloader)
+        else:
+            all_preds = torch.cat(all_preds).numpy()
+            all_labels = torch.cat(all_labels).numpy()
 
-        print(classification_report(all_labels, all_preds, digits=4))
-        accuracy = accuracy_score(all_labels, all_preds)
+            print(classification_report(all_labels, all_preds, digits=4))
+            train_score = accuracy_score(all_labels, all_preds)
 
         if valid_loader is not None:
-            val_accuracy = evaluate(model, valid_loader)
-            history['valid'].append(val_accuracy)
+            val_score = evaluate(model, valid_loader, train_skip_gram=train_skip_gram,
+            loss_function=loss_function)
+            history['valid'].append(val_score)
         if test_loader is not None:
-            test_accuracy = evaluate(model, test_loader)
-            history['test'].append(test_accuracy)
+            test_score = evaluate(model, test_loader, train_skip_gram=train_skip_gram,
+            loss_function=loss_function)
+            history['test'].append(test_score)
 
-        history['train'].append(accuracy)
+        history['train'].append(train_score)
 
-        torch.save(model.state_dict(), f'/content/drive/MyDrive/GeneModels/{epoch}.pth')
+        torch.save(model.state_dict(), f'{base_path}/GeneModels/{epoch}.pth')
 
     return history
 
 
-def evaluate(model, valid_loader):
+def evaluate(model, valid_loader, loss_function=None, train_skip_gram=False):
     valid_preds = []
     valid_labels = []
+    current_loss = 0
     for batch in valid_loader:
         batch_sequences, y = batch
         x = batch_sequences.to('cuda')
-        y = y.to('cuda')
+        if train_skip_gram:
+            y=x.clone()
+        else:
+            y = y.to('cuda')
         h = model(x)  # [B, C]
-        valid_preds.append(h.argmax(-1).detach().cpu())
-        valid_labels.append(y.cpu())
+        if train_skip_gram:
+            h = h.permute(0,2,1)
+        
+        if train_skip_gram:
+            assert loss_function is not None, "loss function is None"
+            j = loss_function(h,y)
+            current_loss += j.item()
+        else:
+            valid_preds.append(h.argmax(-1).detach().cpu())
+            valid_labels.append(y.cpu())
+
+    if train_skip_gram:
+        loss = current_loss / len(valid_loader)
+        return loss
+
     valid_preds = torch.cat(valid_preds).numpy()
     valid_labels = torch.cat(valid_labels).numpy()
 
