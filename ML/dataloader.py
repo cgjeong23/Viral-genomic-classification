@@ -7,10 +7,12 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 
 
-def load_sequences(base_path):
+def load_sequences(base_path, train_embedding=False):
     sequences = []
     labels = []
     for folder in os.listdir(base_path):
+        if folder == 'Human' and train_embedding:
+            continue
         if os.path.isdir(f'{base_path}/{folder}'):
             for file_name in os.listdir(f'{base_path}/{folder}'):
                 fname = f'{base_path}/{folder}/{file_name}'
