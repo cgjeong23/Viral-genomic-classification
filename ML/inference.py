@@ -15,7 +15,7 @@ def infer(sequence, tokenizer, model):
                                 padding_value=tokenizer.padding['pad_id'])
     else:
         encoded_sequence = tokenizer.encode(sequence)
-    encoded_ids = torch.LongTensor(encoded_sequence.ids).unsqueeze(0) # [1, L]
+        encoded_ids = torch.LongTensor(encoded_sequence.ids).unsqueeze(0) # [1, L]
 
     pred = model(encoded_ids) # [B, C,] or # [B, L, E]
     if len(pred.shape) > 2:
