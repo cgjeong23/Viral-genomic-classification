@@ -3,16 +3,26 @@ import json
 import torch
 from tokenizers import Tokenizer, models
 from ML.model import RnnModelForClassification, SkipGramEmbeddingModel
+from torch.nn.utils.rnn import pad_sequence
 
 @torch.no_grad()
 def infer(sequence, tokenizer, model):
-    encoded_sequence = tokenizer.encode(sequence)
+    if isinstance(sequence, list):
+        encoded_sequence = tokenizer.encode_batch(sequence)
+        encoded_sequence = [torch.LongTensor(seq.ids) for seq in encoded_sequence]
+        encoded_ids = pad_sequence(encoded_sequence,
+                                batch_first=True,
+                                padding_value=tokenizer.padding['pad_id'])
+    else:
+        encoded_sequence = tokenizer.encode(sequence)
     encoded_ids = torch.LongTensor(encoded_sequence.ids).unsqueeze(0) # [1, L]
 
-    pred = model(encoded_ids).squeeze(0) # [C,] or # [L, E]
-    if len(pred.shape) > 1:
-        out = pred.mean(0) # [E,]
+    pred = model(encoded_ids) # [B, C,] or # [B, L, E]
+    if len(pred.shape) > 2:
+        out = pred.sum(1) # [B, E]
     else:
+        if pred.shape[0] == 1:
+            pred = pred.squeeze(0)
         out = torch.softmax(pred,0).cpu().numpy()
 
     return out
