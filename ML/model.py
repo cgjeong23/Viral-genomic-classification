@@ -49,9 +49,14 @@ class RnnModel(nn.Module):
 class RnnModelForClassification(nn.Module):
 
     def __init__(self, vocab_size, embedding_dim, pad_id, hidden_dim, num_layers,
-                 output_size):
+                 output_size, pretrained_emb=None, freeze=True):
         super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_id)
+        if pretrained_emb is not None:
+            # do something
+            self.embedding = nn.Embedding.from_pretrained(pretrained_emb,
+        freeze=freeze, padding_idx=pad_id)
+        else:
+            self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_id)
         self.rnn = nn.LSTM(embedding_dim, hidden_dim, num_layers, batch_first=True)
         self.out_layer = nn.Linear(hidden_dim, output_size)
 
