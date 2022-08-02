@@ -4,6 +4,8 @@ from dash import Dash, dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
 import plotly.express as px
 import pandas as pd
+import numpy as np
+import pickle
 
 from ML.inference import infer, load_for_inference
 
@@ -15,6 +17,21 @@ server = app.server
 model_path = 'ML/model.pth'
 model, tokenizer, label_dict = load_for_inference(model_path, "ML/gene_tokenizer.json", "ML/label_dict.json",
 embedding_dim=256, hidden_dim=64, num_layers=1)
+
+with open('ML/pca.pkl','rb') as f:
+    pca = pickle.load(f)
+
+virus_embeddings = np.load('virus_embeddings_3d.npy')
+
+with open('label.pkl', 'rb') as f:
+    label = pickle.load(f)
+
+embedding_df = pd.DataFrame({
+    'component1': virus_embeddings[:,0],
+    'component2': virus_embeddings[:,1],
+    'component3': virus_embeddings[:,2],
+    'Virus Type': label,
+})
 
 df = pd.DataFrame({
     "Virus Type": [x[0] for x in sorted(label_dict.items(), key=lambda x: x[1])],
@@ -33,7 +50,36 @@ app.layout = html.Div([
     html.Button("Go!", id='go-button'),
     html.Br(),
     html.Div(id='my-output'),
+    html.Div(id='embedding-viz ')
 ], style={'text-align':'center'})
+
+
+@app.callback(Output(component_id='embedding_viz', component_property='children'),
+              State(component_id='my-input', component_property='value'),
+              Input(component_id='go-button', component_property='n_clicks'))
+
+def update_embedding_viz(input_value, n_clicks):
+    if n_clicks is None:
+        raise PreventUpdate
+
+    input_value = input_value.strip().upper()
+
+    if set(input_value) != set('ACTG'):
+        return
+
+    emb = infer(input_value, tokenizer, model.embedding).numpy
+    emb_3d = pca.transform(emb)
+
+    emb_df = pd.DataFrame({
+        'component1':emb_3d[:,0],
+        'component2':emb_3d[:,1],
+        'component3':emb_3d[:,2],
+        'Virus Type': "NEW"
+    })
+
+    plot_df = pd.concat([embedding_df, emb_df])
+    fig = px.scatter_3d(embedding_df, x='component1', y='component2', z='component3', color='Virus Type')
+    return dcc.Graph(id='3d-viz', figure=fig)
 
 
 @app.callback(Output(component_id='my-output', component_property='children'),
