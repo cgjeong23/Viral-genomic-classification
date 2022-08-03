@@ -75,9 +75,9 @@ def train(model,
         history['train'].append(train_score)
 
         if train_skip_gram:
-            model_name = f'sg{epoch.pth}.pth'
+            model_name = f'sg{epoch.pth}'
         else:
-            model_name = f'rnn{epoch.pth}.pth'
+            model_name = f'rnn{epoch.pth}'
         torch.save(model.state_dict(), f'{base_path}/GeneModels/{model_name}')
 
     return history
