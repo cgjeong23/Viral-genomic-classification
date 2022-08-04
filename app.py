@@ -50,23 +50,9 @@ app.layout = html.Div([
     html.Button("Go!", id='go-button'),
     html.Br(),
     html.Div(id='my-output'),
-    html.Div(id='embedding-viz ')
 ], style={'text-align':'center'})
 
-
-@app.callback(Output(component_id='embedding_viz', component_property='children'),
-              State(component_id='my-input', component_property='value'),
-              Input(component_id='go-button', component_property='n_clicks'))
-
-def update_embedding_viz(input_value, n_clicks):
-    if n_clicks is None:
-        raise PreventUpdate
-
-    input_value = input_value.strip().upper()
-
-    if set(input_value) != set('ACTG'):
-        return html.P("Please input valid sequence containing only A, C, T, G", style={'color':'red'})
-
+def update_embedding_viz(input_value):
     emb = infer(input_value, tokenizer, model.embedding).numpy()
     emb_3d = pca.transform(emb)
 
@@ -98,7 +84,7 @@ def update_output_div(input_value, n_clicks):
     probability = infer(input_value, tokenizer, model)
     df['Probability'] = probability
     fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type", title="Classification Result")
-    return (dcc.Graph(id='example-graph', figure=fig))
+    return ([dcc.Graph(id='example-graph', figure=fig)], update_embedding_viz(input_value))
 
 
 if __name__ == '__main__':
