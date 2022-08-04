@@ -19,7 +19,7 @@ model, tokenizer, label_dict = load_for_inference(model_path,
                                                   "ML/assets/gene_tokenizer.json",
                                                   "ML/assets/label_dict.json",
                                                   embedding_dim=256,
-                                                  hidden_dim=64,
+                                                  hidden_dim=512,
                                                   num_layers=1)
 
 with open('assets/virus_pca.pkl', 'rb') as f:
