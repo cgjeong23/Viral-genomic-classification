@@ -84,7 +84,7 @@ def update_output_div(input_value, n_clicks):
     probability = infer(input_value, tokenizer, model)
     df['Probability'] = probability
     fig = px.bar(df, x="Virus Type", y="Probability", color="Virus Type", title="Classification Result")
-    return ([dcc.Graph(id='example-graph', figure=fig)], update_embedding_viz(input_value))
+    return [dcc.Graph(id='example-graph', figure=fig), update_embedding_viz(input_value)]
 
 
 if __name__ == '__main__':
