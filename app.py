@@ -22,11 +22,11 @@ model, tokenizer, label_dict = load_for_inference(model_path,
                                                   hidden_dim=512,
                                                   num_layers=1)
 
-with open('assets/virus_pca.pkl', 'rb') as f:
+with open('ML/assets/virus_pca.pkl', 'rb') as f:
     pca = pickle.load(f)
 
-virus_embeddings = np.load('assets/virus_embeddings_3d.npy')
-with open('assets/label.pkl', 'rb') as f:
+virus_embeddings = np.load('ML/assets/virus_embeddings_3d.npy')
+with open('ML/assets/label.pkl', 'rb') as f:
     label = pickle.load(f)
 
 label_index = {k: [] for k in set(label)}
@@ -34,7 +34,7 @@ label_index = {k: [] for k in set(label)}
 for i, l in enumerate(label):
     label_index[l].append(i)
 
-label_index = {k: np.random.choice(v, 100) for k, v in label_index.items()}
+label_index = {k: np.random.choice(v, 50) for k, v in label_index.items()}
 
 sampled_index = np.concatenate(list(label_index.values()))
 
@@ -74,18 +74,22 @@ def update_embedding_viz(input_value):
     emb_3d = pca.transform(emb)
 
     emb_df = pd.DataFrame({
-        'component1': emb_3d[:, 0],
-        'component2': emb_3d[:, 1],
-        'component3': emb_3d[:, 2],
+        'x': emb_3d[:, 0],
+        'y': emb_3d[:, 1],
+        'z': emb_3d[:, 2],
         'Virus Type': "NEW"
     })
 
     plot_df = pd.concat([embedding_df, emb_df])
+
+    new_ind = plot_df['Virus Type'] == "NEW"
+    size = np.where(new_ind, 2, 0.5)
     fig = px.scatter_3d(plot_df,
                         x='x',
                         y='y',
                         z='z',
                         color='Virus Type',
+                        size=size,
                         title="Virus Feautres 3D visualization")
     return dcc.Graph(id='3d-viz', figure=fig)
 
