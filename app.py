@@ -14,19 +14,19 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
-model_path = 'ML/model.pth'
+model_path = 'ML/assets/model.pth'
 model, tokenizer, label_dict = load_for_inference(model_path,
-                                                  "ML/gene_tokenizer.json",
-                                                  "ML/label_dict.json",
+                                                  "ML/assets/gene_tokenizer.json",
+                                                  "ML/assets/label_dict.json",
                                                   embedding_dim=256,
                                                   hidden_dim=64,
                                                   num_layers=1)
 
-with open('pca.pkl', 'rb') as f:
+with open('assets/virus_pca.pkl', 'rb') as f:
     pca = pickle.load(f)
 
-virus_embeddings = np.load('virus_embeddings_3d.npy')
-with open('label.pkl', 'rb') as f:
+virus_embeddings = np.load('assets/virus_embeddings_3d.npy')
+with open('assets/label.pkl', 'rb') as f:
     label = pickle.load(f)
 
 label_index = {k: [] for k in set(label)}
