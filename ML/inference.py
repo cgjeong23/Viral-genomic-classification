@@ -6,7 +6,7 @@ from ML.model import RnnModelForClassification, SkipGramEmbeddingModel
 from torch.nn.utils.rnn import pad_sequence
 
 @torch.no_grad()
-def infer(sequence, tokenizer, model):
+def infer(sequence, tokenizer, model, device='cpu'):
     if isinstance(sequence, list):
         encoded_sequence = tokenizer.encode_batch(sequence)
         encoded_sequence = [torch.LongTensor(seq.ids) for seq in encoded_sequence]
@@ -17,7 +17,7 @@ def infer(sequence, tokenizer, model):
         encoded_sequence = tokenizer.encode(sequence)
         encoded_ids = torch.LongTensor(encoded_sequence.ids).unsqueeze(0) # [1, L]
 
-    pred = model(encoded_ids) # [B, C,] or # [B, L, E]
+    pred = model(encoded_ids.to(device)) # [B, C,] or # [B, L, E]
     if len(pred.shape) > 2:
         out = pred.sum(1) # [B, E]
     else:
