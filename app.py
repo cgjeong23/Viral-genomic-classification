@@ -90,6 +90,9 @@ def update_embedding_viz(input_value):
                         z='z',
                         color='Virus Type',
                         size=size,
+                        symbol=new_ind.astype(int),
+                        symbol_sequence=['circle', 'square'],
+                        opacity=0.8,
                         title="Virus Feautres 3D visualization")
     return dcc.Graph(id='3d-viz', figure=fig)
 
