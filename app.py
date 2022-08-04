@@ -65,9 +65,9 @@ def update_embedding_viz(input_value, n_clicks):
     input_value = input_value.strip().upper()
 
     if set(input_value) != set('ACTG'):
-        return
+        return html.P("Please input valid sequence containing only A, C, T, G", style={'color':'red'})
 
-    emb = infer(input_value, tokenizer, model.embedding).numpy
+    emb = infer(input_value, tokenizer, model.embedding).numpy()
     emb_3d = pca.transform(emb)
 
     emb_df = pd.DataFrame({
@@ -78,7 +78,7 @@ def update_embedding_viz(input_value, n_clicks):
     })
 
     plot_df = pd.concat([embedding_df, emb_df])
-    fig = px.scatter_3d(embedding_df, x='component1', y='component2', z='component3', color='Virus Type')
+    fig = px.scatter_3d(plot_df, x='component1', y='component2', z='component3', color='Virus Type')
     return dcc.Graph(id='3d-viz', figure=fig)
 
 
