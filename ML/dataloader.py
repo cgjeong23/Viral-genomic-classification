@@ -39,7 +39,10 @@ def get_3_splits(sequences, labels):
      test_label) = train_test_split(sequences, labels, test_size=0.2, stratify=labels)
 
     (valid_sequence, test_sequence, valid_label,
-     test_label) = train_test_split(test_sequence, test_label, test_size=0.5, stratify=test_label)
+     test_label) = train_test_split(test_sequence,
+                                    test_label,
+                                    test_size=0.5,
+                                    stratify=test_label)
 
     return (train_sequence, valid_sequence, test_sequence, train_label, valid_label,
             test_label)
@@ -86,7 +89,7 @@ class SequenceDataset(Dataset):
         return len(self.sequence)
 
     def __getitem__(self, idx):
-        seq = self.sequence[idx]
+        seq = self.sequence[idx].strip()
         label = self.labels[idx]
         encoded_seq = self.tokenizer.encode(seq)
         return torch.LongTensor(encoded_seq.ids), label
