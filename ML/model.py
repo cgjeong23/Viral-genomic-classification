@@ -79,6 +79,5 @@ class RnnModelForClassification(nn.Module):
         rnn_out, _ = self.rnn(embedded)  # [B, L, H]
 
         last_token_index = (ids != self.pad_id).sum(-1) - 1  # [B,]
-        masks = last_token_index.view(1, -1, 1).expand(*rnn_out.shape)
-        hidden_state = rnn_out.gather(0, masks)[0]  # [B, H]
+        hidden_state = rnn_out[range(rnn_out.shape[0]), last_token_index, :]
         return self.out_layer(hidden_state)  # [B, C]
