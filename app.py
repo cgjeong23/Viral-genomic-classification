@@ -59,6 +59,8 @@ app.layout = html.Div([
     html.Div([
         html.H6("Upload your RNA Sequence."),
         html.H6("We will detect the virus for you."),
+        html.A("How does this work", href="https://serious-cord-d5d.notion.site/Virus-Classification-Project-Report-f89b1f7d12a0401c8c1fce2a10117d83",
+        style={'font-style':'italic'}),
     ]),
     html.Hr(),
     "Type your RNA Sequence: ",
