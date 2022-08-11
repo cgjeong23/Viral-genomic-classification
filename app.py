@@ -15,7 +15,7 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = "virific"
 server = app.server
 
-model_path = 'ML/assets/sgrnn_ftrue.pth'
+model_path = 'ML/assets/sgrnn_emb_ftrue.pth'
 model, tokenizer, label_dict = load_for_inference(model_path,
                                                   "ML/assets/gene_tokenizer.json",
                                                   "ML/assets/label_dict.json",
